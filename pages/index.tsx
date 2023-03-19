@@ -1,33 +1,52 @@
 import Image from "next/image"
+import Head from "next/head"
 
-export default function Index({ views }: { views: number }) {
+export default function Index({ views, bot }: { views: number, bot: any }) {
 
-  return (
-      <div className="h-screen w-screen bg-black flex items-center flex-col">
-        <div className="py-20">
-          <Image src="/img.png" alt="akira-logo" height={175} width={300} />
-        </div>
-          <div className="text-3xl font-extrabold">
-              COMING SOON
-          </div>
-          <div className="text-gray-400 text-2xl">
-              Page visited {views} times
-          </div>
-        {/*{trades.map(trade => (*/}
-        {/*    <div className="text-white flex">*/}
-        {/*      <div className="mr-4">{trade.createdAt}</div>*/}
-        {/*      <div>{trade.side}</div>*/}
-        {/*    </div>*/}
-        {/*))}*/}
-      </div>
+      return (
+          <>
+              <Head>
+                  <title>AKIRA</title>
+                  <meta name="description" content="AKIRA" />
+                  <meta name="viewport" content="width=device-width, initial-scale=1" />
+                  <link rel="icon" href="/pill.png" />
+              </Head>
+              <div className="h-screen w-screen bg-black flex items-center flex-col">
+                <div className="py-20">
+                  <Image src="/img.png" alt="akira-logo" height={175} width={300} />
+                </div>
+                <div className="flex justify-between text-xl font-extrabold w-[380px]">
+                    <div>
+                        BOT STATUS:
+                    </div>
+                    <div className={`${bot.direction === 'LONG' && 'text-green-500'} ${bot.direction === 'SHORT' && 'text-red-500'}`}>
+                        {bot.direction}
+                    </div>
+                </div>
+                  <div className="flex justify-between text-xl font-extrabold w-[380px]">
+                      <div>
+                          UPDATED AT:
+                      </div>
+                      <div className="">
+                          {bot.updatedAt.slice(0, -5)}
+                      </div>
+                  </div>
+                <div className="text-gray-400 mt-10">
+                    Page visited {views} times
+                </div>
+              </div>
+          </>
   )
 }
 
 export async function getServerSideProps(context: any) {
-    const data = await (await fetch(`${process.env.DENO_PRISMA_AKIRA_API_URL}/pageviews/NEXT_AKIRA_FRONTEND`, { method: "PUT" })).json()
-    const { views } = data.data
+    const viewData = await (await fetch(`${process.env.DENO_PRISMA_AKIRA_API_URL}/pageviews/NEXT_AKIRA_FRONTEND`, { method: "PUT" })).json()
+    const { views } = viewData.data
+
+    const botData = await (await fetch(`${process.env.DENO_PRISMA_AKIRA_API_URL}/bot-status/${process.env.STRATEGY_KEY}`)).json()
+    const bot = botData.data
 
   return {
-    props: { views }
+    props: { views, bot }
   }
 }
